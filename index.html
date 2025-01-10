@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Periodic Table Login</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Welcome to the 3D Periodic Table!</h1>
+        <p>Please sign in with Google to access the visualization.</p>
+        <div id="g_id_onload" data-client_id="218262642676-de72jkeemph10rp322egbs4cr7818qpr.apps.googleusercontent.com" data-callback="handleCredentialResponse">
+        </div>
+        <div class="g_id_signin" data-type="standard"></div>
+    </div>
+
+    <script>
+        function handleCredentialResponse(response) {
+            console.log("ID Token: " + response.credential);
+            alert("Login successful! You can now access the periodic table.");
+        }
+    </script>
+</body>
+
+</html>

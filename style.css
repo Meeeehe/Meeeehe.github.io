@@ -1,0 +1,19 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+.container {
+    margin-top: 100px;
+}
+
+h1 {
+    color: #333;
+}
+
+.g_id_signin {
+    margin-top: 20px;
+}
