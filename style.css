@@ -8,10 +8,13 @@ body {
 
 .container {
     margin-top: 100px;
+    max-width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 h1 {
-    color: #c02828;
+    color: #333;
 }
 
 .g_id_signin {
