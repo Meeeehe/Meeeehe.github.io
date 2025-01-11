@@ -134,15 +134,27 @@ select {
     top: 0;
     left: 0;
     width: 100%;
+    height: 15px; /* Ensure enough height for both items */
+    box-sizing: border-box;
+    overflow: hidden; /* Prevent overflow from breaking layout */
 }
 
 .country {
     text-align: left;
+    width: 50%; /* Allocate half the row for Country */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Show "..." if text is too long */
 }
 
 .age {
     text-align: right;
+    width: 50%; /* Allocate half the row for Age */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Show "..." if text is too long */
 }
+
 
 .photo {
     width: 100%;
