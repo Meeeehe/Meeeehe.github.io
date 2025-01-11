@@ -92,7 +92,7 @@
 				element.className = "element";
 				element.style.backgroundColor = getNetWorthColor(netWorth);
 
-				// Top row: Country and Age
+				// Top row: Country (left) and Age (right)
 				const topRow = document.createElement("div");
 				topRow.className = "top-row";
 
@@ -108,7 +108,7 @@
 
 				element.appendChild(topRow);
 
-				// Center: Photo
+				// Middle: Photo
 				const img = document.createElement("img");
 				img.src = photo;
 				img.alt = name;
@@ -121,7 +121,7 @@
 				nameDiv.textContent = name;
 				element.appendChild(nameDiv);
 
-				// Bottom: Interest
+				// Below Name: Interest
 				const interestDiv = document.createElement("div");
 				interestDiv.className = "interest";
 				interestDiv.textContent = interest;
@@ -135,16 +135,16 @@
 
 				objects.push(objectCSS);
 
-				// Assign positions for table layout
+				// Ensure every valid object has a corresponding target position
 				const object = new THREE.Object3D();
-				object.position.x = (i % 20) * 140 - 1330;
-				object.position.y = -(Math.floor(i / 20) * 180) + 990;
-				targets.table.push(object);
+				object.position.x = (i % 20) * 140 - 1330; // Example group position
+				object.position.y = -(Math.floor(i / 20) * 180) + 990; // Example period position
+
+				targets.table.push(object); // Add to table targets
 			});
 
 			transform(targets.table, 2000); // Apply initial transformation
 		}
-
 
 		function init() {
 			camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 10000);

@@ -112,57 +112,54 @@ select {
 .element {
     width: 120px;
     height: 160px;
-    box-shadow: 0px 0px 12px rgba(0, 255, 255, 0.5);
     border: 1px solid rgba(127, 255, 255, 0.25);
-    font-family: Helvetica, sans-serif;
+    border-radius: 10px;
     text-align: center;
-    line-height: normal;
-    cursor: default;
-    position: relative; /* Enable absolute positioning for children */
-    overflow: hidden; /* Ensure content fits the tile */
+    cursor: pointer;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    align-items: center;
-    padding-top: 20px; /* Leave space for the top row */
+    overflow: hidden;
+    position: relative; /* For positioning child elements like top-row */
 }
 
-/* Top row: Country and Age in a single row */
-.element .top-row {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    right: 5px;
+.top-row {
     display: flex;
-    justify-content: space-between; /* Push country and age to the edges */
-    align-items: center;
-    font-size: 12px;
+    justify-content: space-between;
+    padding: 5px;
+    font-size: 10px;
     font-weight: bold;
-    color: rgba(127, 255, 255, 0.75);
-    width: calc(100% - 10px); /* Account for padding */
+    color: #ffffff;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
 }
 
-/* Center: Photo */
-.element .photo {
-    width: 70px;
+.country {
+    text-align: left;
+}
+
+.age {
+    text-align: right;
+}
+
+.photo {
+    width: 100%;
     height: 70px;
-    object-fit: cover; /* Maintain aspect ratio */
-    margin: 10px 0; /* Space around the image */
-    border-radius: 5px;
+    object-fit: cover; /* Ensure images fill the area without distortion */
+    margin-top: 20px;
 }
 
-/* Below Photo: Name */
-.element .name {
-    font-size: 14px;
-    font-weight: bold;
-    color: rgba(255, 255, 255, 0.85);
-    margin-bottom: 5px;
-}
-
-/* Bottom: Interest */
-.element .interest {
+.name {
     font-size: 12px;
-    color: rgba(127, 255, 255, 0.75);
-    margin-bottom: 10px;
+    font-weight: bold;
+    margin: 5px 0 0 0;
+    color: #ffffff;
 }
 
+.interest {
+    font-size: 10px;
+    margin: 5px 0;
+    color: #d3d3d3;
+}
