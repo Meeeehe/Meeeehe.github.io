@@ -75,10 +75,8 @@
 			if (value <= 200000) return "rgba(255, 165, 0, 0.7)"; // Orange for $100K to $200K
 			return "rgba(0, 128, 0, 0.7)"; // Green for > $200K
 		}
-		
-		
 
-        async function initializePeriodicTable() {
+		async function initializePeriodicTable() {
 			const rows = await fetchSheetData(); // Fetch data
 			rows.shift(); // Remove header row
 		
@@ -94,24 +92,40 @@
 				element.className = "element";
 				element.style.backgroundColor = getNetWorthColor(netWorth);
 		
-				// Add photo
+				// Top row: Country (left) and Age (right)
+				const topRow = document.createElement("div");
+				topRow.className = "top-row";
+		
+				const countryDiv = document.createElement("div");
+				countryDiv.className = "country";
+				countryDiv.textContent = country;
+				topRow.appendChild(countryDiv);
+		
+				const ageDiv = document.createElement("div");
+				ageDiv.className = "age";
+				ageDiv.textContent = age;
+				topRow.appendChild(ageDiv);
+		
+				element.appendChild(topRow);
+		
+				// Middle: Photo
 				const img = document.createElement("img");
 				img.src = photo;
 				img.alt = name;
-				img.style.width = "100%"; // Adjust size as needed
+				img.className = "photo";
 				element.appendChild(img);
 		
-				// Add name
+				// Below Photo: Name
 				const nameDiv = document.createElement("div");
 				nameDiv.className = "name";
 				nameDiv.textContent = name;
 				element.appendChild(nameDiv);
 		
-				// Add details
-				const details = document.createElement("div");
-				details.className = "details";
-				details.innerHTML = `Age: ${age}<br>Country: ${country}<br>Interest: ${interest}<br>Net Worth: ${netWorth}`;
-				element.appendChild(details);
+				// Below Name: Interest
+				const interestDiv = document.createElement("div");
+				interestDiv.className = "interest";
+				interestDiv.textContent = interest;
+				element.appendChild(interestDiv);
 		
 				const objectCSS = new CSS3DObject(element);
 				objectCSS.position.x = Math.random() * 4000 - 2000;
@@ -129,17 +143,8 @@
 				targets.table.push(object); // Add to table targets
 			});
 		
-			// Ensure targets match objects
-			if (targets.table.length !== objects.length) {
-				console.error(
-					`Mismatch: ${targets.table.length} targets, but ${objects.length} objects.`
-				);
-			}
-		
 			transform(targets.table, 2000); // Apply initial transformation
 		}
-		
-		
 
         function init() {
             camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 10000);
