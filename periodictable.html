@@ -37,11 +37,26 @@
         animate();
 
         async function fetchSheetData() {
-            const response = await fetch(SHEET_URL);
-            const csvText = await response.text();
-            const rows = csvText.split("\n").map(row => row.split(","));
-            return rows;
-        }
+			const response = await fetch(SHEET_URL);
+			if (!response.ok) {
+				console.error("Failed to fetch data:", response.status, response.statusText);
+				return [];
+			}
+		
+			const csvText = await response.text();
+		
+			// Parse the CSV with commas and quotes correctly
+			const rows = csvText
+				.split("\n")
+				.map(row => {
+					const match = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+					return match ? match.map(cell => cell.replace(/^"|"$/g, "")) : [];
+				});
+		
+			console.log("Parsed Rows:", rows); // Debug parsed rows
+			return rows;
+		}
+		
 
         function getNetWorthColor(netWorth) {
 			console.log(`Original Net Worth: "${netWorth}"`);
