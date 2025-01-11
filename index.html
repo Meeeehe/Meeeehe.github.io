@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Periodic Table Login</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
@@ -20,8 +20,12 @@
 
     <script>
         function handleCredentialResponse(response) {
+            // Verify login
             console.log("ID Token: " + response.credential);
-            alert("Login successful! You can now access the periodic table.");
+            
+            // Redirect to the 3D Periodic Table page after successful login
+            alert("Login successful! Redirecting to the 3D Periodic Table...");
+            window.location.href = "periodictable.html"; // Redirect to the periodic table page
         }
     </script>
 </body>
