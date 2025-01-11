@@ -124,6 +124,8 @@ select {
 }
 
 .top-row {
+    height: auto; /* Allow the row to expand if necessary */
+    background-color: rgba(255, 0, 0, 0.5); /* Add a debug background color */
     display: flex;
     justify-content: space-between;
     padding: 5px;
