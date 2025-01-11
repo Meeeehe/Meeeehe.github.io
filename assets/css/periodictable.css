@@ -175,3 +175,33 @@ select {
     margin: 5px 0;
     color: #d3d3d3;
 }
+
+.element:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+
+@media (max-width: 768px) {
+    .element {
+        width: 100px;
+        height: 140px;
+    }
+
+    .top-row {
+        font-size: 8px;
+    }
+
+    .photo {
+        height: 60px;
+    }
+
+    .name {
+        font-size: 10px;
+    }
+
+    .interest {
+        font-size: 8px;
+    }
+}
