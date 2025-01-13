@@ -80,6 +80,8 @@
 			const rows = await fetchSheetData(); // Fetch data
 			rows.shift(); // Remove header row
 
+			const vector = new THREE.Vector3(); // Used for positioning in helix and sphere
+
 			rows.forEach((row, i) => {
 				if (row.length < 6) {
 					console.warn(`Skipping incomplete row: ${row}`);
@@ -135,16 +137,57 @@
 
 				objects.push(objectCSS);
 
-				// Ensure every valid object has a corresponding target position
-				const object = new THREE.Object3D();
-				object.position.x = (i % 20) * 140 - 1330; // Example group position
-				object.position.y = -(Math.floor(i / 20) * 180) + 990; // Example period position
+				// TABLE target position
+				const columnsTable = 20;
+				const rowSpacingTable = 180;
+				const columnSpacingTable = 140;
+				const tableTarget = new THREE.Object3D();
+				tableTarget.position.x = (i % columnsTable) * columnSpacingTable - (columnsTable * columnSpacingTable) / 2;
+				tableTarget.position.y = -Math.floor(i / columnsTable) * rowSpacingTable + 900;
+				tableTarget.position.z = 0;
+				targets.table.push(tableTarget);
 
-				targets.table.push(object); // Add to table targets
+				// SPHERE target position
+				const phi = Math.acos(-1 + (2 * i) / rows.length);
+				const theta = Math.sqrt(rows.length * Math.PI) * phi;
+				const sphereTarget = new THREE.Object3D();
+				sphereTarget.position.setFromSphericalCoords(800, phi, theta);
+				vector.copy(sphereTarget.position).multiplyScalar(2);
+				sphereTarget.lookAt(vector);
+				targets.sphere.push(sphereTarget);
+
+				// DOUBLE HELIX target position
+				const radiusHelix = 800;
+				const verticalSpacingHelix = 20;
+				const turnsHelix = 6;
+				const angleStepHelix = (2 * Math.PI * turnsHelix) / rows.length;
+				const thetaDoubleHelix = i * angleStepHelix;
+				const yDoubleHelix = i * verticalSpacingHelix - (rows.length * verticalSpacingHelix) / 2;
+				const helixTarget = new THREE.Object3D();
+				helixTarget.position.x =
+					radiusHelix * Math.cos(thetaDoubleHelix) * (i % 2 === 0 ? 1 : -1);
+				helixTarget.position.y = yDoubleHelix;
+				helixTarget.position.z = radiusHelix * Math.sin(thetaDoubleHelix);
+				helixTarget.lookAt(new THREE.Vector3(0, yDoubleHelix, 0));
+				targets.helix.push(helixTarget);
+
+				// GRID target position
+				const columnsGrid = 5;
+				const rowsGrid = 4;
+				const layersGrid = 10;
+				const columnSpacingGrid = 200;
+				const rowSpacingGrid = 150;
+				const layerSpacingGrid = 400;
+				const gridTarget = new THREE.Object3D();
+				gridTarget.position.x = (i % columnsGrid) * columnSpacingGrid - (columnsGrid * columnSpacingGrid) / 2;
+				gridTarget.position.y = -Math.floor(i / columnsGrid) % rowsGrid * rowSpacingGrid + 300;
+				gridTarget.position.z = Math.floor(i / (columnsGrid * rowsGrid)) * layerSpacingGrid - (layersGrid * layerSpacingGrid) / 2;
+				targets.grid.push(gridTarget);
 			});
 
 			transform(targets.table, 2000); // Apply initial transformation
 		}
+
 
 		function init() {
 			camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 10000);
