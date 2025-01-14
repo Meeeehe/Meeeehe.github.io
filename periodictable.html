@@ -2,275 +2,205 @@
 <html lang="en">
 
 <head>
-	<title>Three.js CSS3D - Periodic Table</title>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link type="text/css" rel="stylesheet" href="assets/css/periodictable.css">
+    <title>Three.js CSS3D - Periodic Table</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="assets/css/periodictable.css">
 </head>
 
 <body>
 
-	<div id="info">
-		<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> CSS3D - Periodic Table.
-	</div>
-	<div id="container"></div>
-	<div id="menu">
-		<button id="table">TABLE</button>
-		<button id="sphere">SPHERE</button>
-		<button id="helix">HELIX</button>
-		<button id="grid">GRID</button>
-	</div>
+    <div id="info">
+        <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> CSS3D - Periodic Table.
+    </div>
+    <div id="container"></div>
+    <div id="menu">
+        <button id="table">TABLE</button>
+        <button id="sphere">SPHERE</button>
+        <button id="helix">HELIX</button>
+        <button id="grid">GRID</button>
+    </div>
 
-	<script type="module">
-		import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js";
-		import { TWEEN } from "https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/libs/tween.module.min.js";
-		import { TrackballControls } from "https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/TrackballControls.js";
-		import { CSS3DRenderer, CSS3DObject } from "https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/renderers/CSS3DRenderer.js";
+    <script type="module">
+        import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js";
+        import { TWEEN } from "https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/libs/tween.module.min.js";
+        import { TrackballControls } from "https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/TrackballControls.js";
+        import { CSS3DRenderer, CSS3DObject } from "https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/renderers/CSS3DRenderer.js";
 
-		const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsT5dAcMPhrHo8nGg32Si8Y8Qev19GtktdzZ8Rec334dUiy6Nf2YOP8TJuqOOc-Moyj7UsGuJDfkwG/pub?output=csv";
+        const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsT5dAcMPhrHo8nGg32Si8Y8Qev19GtktdzZ8Rec334dUiy6Nf2YOP8TJuqOOc-Moyj7UsGuJDfkwG/pub?output=csv";
 
-		let camera, scene, renderer, controls;
-		const objects = [];
-		const targets = { table: [], sphere: [], helix: [], grid: [] };
+        const CONFIG = {
+            table: { columns: 20, rowSpacing: 180, columnSpacing: 140 },
+            helix: { radius: 800, verticalSpacing: 20, turns: 6 },
+            grid: { columns: 5, rows: 4, layers: 10, columnSpacing: 200, rowSpacing: 150, layerSpacing: 400 },
+        };
 
-		init();
-		animate();
+        let camera, scene, renderer, controls;
+        const objects = [];
+        const targets = { table: [], sphere: [], helix: [], grid: [] };
 
-		async function fetchSheetData() {
-			const response = await fetch(SHEET_URL);
-			if (!response.ok) {
-				console.error("Failed to fetch data:", response.status, response.statusText);
-				return [];
-			}
+        init();
+        animate();
 
-			const csvText = await response.text();
+        async function fetchSheetData() {
+            try {
+                const response = await fetch(SHEET_URL);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const csvText = await response.text();
+                return csvText.split("\n").map(row => row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(cell => cell.replace(/^"|"$/g, "")) || []);
+            } catch (err) {
+                console.error("Failed to fetch data:", err);
+                return [];
+            }
+        }
 
-			// Parse the CSV with commas and quotes correctly
-			const rows = csvText
-				.split("\n")
-				.map(row => {
-					const match = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-					return match ? match.map(cell => cell.replace(/^"|"$/g, "")) : [];
-				});
+        function getNetWorthColor(netWorth) {
+            const cleanedNetWorth = netWorth.replace(/[^0-9.]/g, "");
+            const value = parseFloat(cleanedNetWorth);
+            if (isNaN(value)) return "rgba(127, 127, 127, 0.7)";
+            if (value < 100000) return "rgba(255, 0, 0, 0.7)";
+            if (value <= 200000) return "rgba(255, 165, 0, 0.7)";
+            return "rgba(0, 128, 0, 0.7)";
+        }
 
-			console.log("Parsed Rows:", rows); // Debug parsed rows
-			return rows;
-		}
+        function createTileElement(name, photo, age, country, interest, netWorth) {
+            const element = document.createElement("div");
+            element.className = "element";
+            element.style.cssText = `background-color: ${getNetWorthColor(netWorth)};`;
 
-		function getNetWorthColor(netWorth) {
-			console.log(`Original Net Worth: "${netWorth}"`);
+            const topRow = `
+                <div class="top-row">
+                    <div class="country">${country}</div>
+                    <div class="age">${age}</div>
+                </div>`;
+            const img = `<img src="${photo}" alt="${name}" class="photo">`;
+            const details = `
+                <div class="name">${name}</div>
+                <div class="interest">${interest}</div>`;
 
-			const cleanedNetWorth = netWorth.replace(/[^0-9.]/g, "");
-			console.log(`Cleaned Net Worth: "${cleanedNetWorth}"`);
+            element.innerHTML = topRow + img + details;
+            return element;
+        }
 
-			const value = parseFloat(cleanedNetWorth);
+        async function initializePeriodicTable() {
+            const rows = await fetchSheetData();
+            rows.shift(); // Remove header row
 
-			if (isNaN(value)) {
-				console.warn(`Invalid Net Worth value: "${netWorth}"`);
-				return "rgba(127, 127, 127, 0.7)"; // Default color for invalid values
-			}
+            rows.forEach((row, i) => {
+                if (row.length < 6) return;
+                const [name, photo, age, country, interest, netWorth] = row;
 
-			console.log(`Parsed Net Worth: ${value}`);
-			if (value < 100000) return "rgba(255, 0, 0, 0.7)"; // Red for < $100K
-			if (value <= 200000) return "rgba(255, 165, 0, 0.7)"; // Orange for $100K to $200K
-			return "rgba(0, 128, 0, 0.7)"; // Green for > $200K
-		}
+                const element = createTileElement(name, photo, age, country, interest, netWorth);
+                const objectCSS = new CSS3DObject(element);
+                objectCSS.position.set(Math.random() * 4000 - 2000, Math.random() * 4000 - 2000, Math.random() * 4000 - 2000);
+                scene.add(objectCSS);
+                objects.push(objectCSS);
 
-		async function initializePeriodicTable() {
-			const rows = await fetchSheetData(); // Fetch data
-			rows.shift(); // Remove header row
+                // TABLE target position
+                const { columns, rowSpacing, columnSpacing } = CONFIG.table;
+                const tableTarget = new THREE.Object3D();
+                tableTarget.position.set(
+                    (i % columns) * columnSpacing - (columns * columnSpacing) / 2,
+                    -Math.floor(i / columns) * rowSpacing + 900,
+                    0
+                );
+                targets.table.push(tableTarget);
 
-			const vector = new THREE.Vector3(); // Used for positioning in helix and sphere
+                // SPHERE target position
+                const phi = Math.acos(-1 + (2 * i) / rows.length);
+                const theta = Math.sqrt(rows.length * Math.PI) * phi;
+                const sphereTarget = new THREE.Object3D();
+                sphereTarget.position.setFromSphericalCoords(800, phi, theta);
+                targets.sphere.push(sphereTarget);
 
-			rows.forEach((row, i) => {
-				if (row.length < 6) {
-					console.warn(`Skipping incomplete row: ${row}`);
-					return; // Skip rows with missing data
-				}
+                // DOUBLE HELIX target position
+                const { radius, verticalSpacing, turns } = CONFIG.helix;
+                const angleStep = (2 * Math.PI * turns) / rows.length;
+                const thetaDoubleHelix = i * angleStep;
+                const yDoubleHelix = i * verticalSpacing - (rows.length * verticalSpacing) / 2;
+                const helixTarget = new THREE.Object3D();
+                helixTarget.position.set(
+                    radius * Math.cos(thetaDoubleHelix) * (i % 2 === 0 ? 1 : -1),
+                    yDoubleHelix,
+                    radius * Math.sin(thetaDoubleHelix)
+                );
+                targets.helix.push(helixTarget);
 
-				const [name, photo, age, country, interest, netWorth] = row;
+                // GRID target position
+                const { columns: gCols, rows: gRows, layers: gLayers, columnSpacing: gColSpacing, rowSpacing: gRowSpacing, layerSpacing: gLayerSpacing } = CONFIG.grid;
+                const gridTarget = new THREE.Object3D();
+                gridTarget.position.set(
+                    (i % gCols) * gColSpacing - (gCols * gColSpacing) / 2,
+                    -Math.floor(i / gCols) % gRows * gRowSpacing + 300,
+                    Math.floor(i / (gCols * gRows)) * gLayerSpacing - (gLayers * gLayerSpacing) / 2
+                );
+                targets.grid.push(gridTarget);
+            });
 
-				const element = document.createElement("div");
-				element.className = "element";
-				element.style.backgroundColor = getNetWorthColor(netWorth);
+            transform(targets.table, 2000);
+        }
 
-				// Top row: Country (left) and Age (right)
-				const topRow = document.createElement("div");
-				topRow.className = "top-row";
+        function init() {
+            camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 10000);
+            camera.position.z = 3000;
 
-				const countryDiv = document.createElement("div");
-				countryDiv.className = "country";
-				countryDiv.textContent = country;
-				topRow.appendChild(countryDiv);
+            scene = new THREE.Scene();
 
-				const ageDiv = document.createElement("div");
-				ageDiv.className = "age";
-				ageDiv.textContent = age;
-				topRow.appendChild(ageDiv);
+            renderer = new CSS3DRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById("container").appendChild(renderer.domElement);
 
-				element.appendChild(topRow);
+            controls = new TrackballControls(camera, renderer.domElement);
+            controls.minDistance = 500;
+            controls.maxDistance = 6000;
+            controls.addEventListener("change", render);
 
-				// Middle: Photo
-				const img = document.createElement("img");
-				img.src = photo;
-				img.alt = name;
-				img.className = "photo";
-				element.appendChild(img);
+            initializePeriodicTable();
 
-				// Below Photo: Name
-				const nameDiv = document.createElement("div");
-				nameDiv.className = "name";
-				nameDiv.textContent = name;
-				element.appendChild(nameDiv);
+            document.getElementById("table").addEventListener("click", () => transform(targets.table, 2000));
+            document.getElementById("sphere").addEventListener("click", () => transform(targets.sphere, 2000));
+            document.getElementById("helix").addEventListener("click", () => transform(targets.helix, 2000));
+            document.getElementById("grid").addEventListener("click", () => transform(targets.grid, 2000));
 
-				// Below Name: Interest
-				const interestDiv = document.createElement("div");
-				interestDiv.className = "interest";
-				interestDiv.textContent = interest;
-				element.appendChild(interestDiv);
+            window.addEventListener("resize", onWindowResize);
+        }
 
-				const objectCSS = new CSS3DObject(element);
-				objectCSS.position.x = Math.random() * 4000 - 2000;
-				objectCSS.position.y = Math.random() * 4000 - 2000;
-				objectCSS.position.z = Math.random() * 4000 - 2000;
-				scene.add(objectCSS);
+        function transform(targets, duration) {
+            TWEEN.removeAll();
+            objects.forEach((object, i) => {
+                const target = targets[i];
+                if (!target) return;
 
-				objects.push(objectCSS);
+                new TWEEN.Tween(object.position)
+                    .to(target.position, duration)
+                    .easing(TWEEN.Easing.Exponential.InOut)
+                    .start();
 
-				// TABLE target position
-				const columnsTable = 20;
-				const rowSpacingTable = 180;
-				const columnSpacingTable = 140;
-				const tableTarget = new THREE.Object3D();
-				tableTarget.position.x = (i % columnsTable) * columnSpacingTable - (columnsTable * columnSpacingTable) / 2;
-				tableTarget.position.y = -Math.floor(i / columnsTable) * rowSpacingTable + 900;
-				tableTarget.position.z = 0;
-				targets.table.push(tableTarget);
+                new TWEEN.Tween(object.rotation)
+                    .to(target.rotation, duration)
+                    .easing(TWEEN.Easing.Exponential.InOut)
+                    .start();
+            });
 
-				// SPHERE target position
-				const phi = Math.acos(-1 + (2 * i) / rows.length);
-				const theta = Math.sqrt(rows.length * Math.PI) * phi;
-				const sphereTarget = new THREE.Object3D();
-				sphereTarget.position.setFromSphericalCoords(800, phi, theta);
-				vector.copy(sphereTarget.position).multiplyScalar(2);
-				sphereTarget.lookAt(vector);
-				targets.sphere.push(sphereTarget);
+            new TWEEN.Tween(this).to({}, duration).onUpdate(render).start();
+        }
 
-				// DOUBLE HELIX target position
-				const radiusHelix = 800;
-				const verticalSpacingHelix = 20;
-				const turnsHelix = 6;
-				const angleStepHelix = (2 * Math.PI * turnsHelix) / rows.length;
-				const thetaDoubleHelix = i * angleStepHelix;
-				const yDoubleHelix = i * verticalSpacingHelix - (rows.length * verticalSpacingHelix) / 2;
-				const helixTarget = new THREE.Object3D();
-				helixTarget.position.x =
-					radiusHelix * Math.cos(thetaDoubleHelix) * (i % 2 === 0 ? 1 : -1);
-				helixTarget.position.y = yDoubleHelix;
-				helixTarget.position.z = radiusHelix * Math.sin(thetaDoubleHelix);
-				helixTarget.lookAt(new THREE.Vector3(0, yDoubleHelix, 0));
-				targets.helix.push(helixTarget);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            render();
+        }
 
-				// GRID target position
-				const columnsGrid = 5;
-				const rowsGrid = 4;
-				const layersGrid = 10;
-				const columnSpacingGrid = 200;
-				const rowSpacingGrid = 150;
-				const layerSpacingGrid = 400;
-				const gridTarget = new THREE.Object3D();
-				gridTarget.position.x = (i % columnsGrid) * columnSpacingGrid - (columnsGrid * columnSpacingGrid) / 2;
-				gridTarget.position.y = -Math.floor(i / columnsGrid) % rowsGrid * rowSpacingGrid + 300;
-				gridTarget.position.z = Math.floor(i / (columnsGrid * rowsGrid)) * layerSpacingGrid - (layersGrid * layerSpacingGrid) / 2;
-				targets.grid.push(gridTarget);
-			});
+        function animate() {
+            requestAnimationFrame(animate);
+            TWEEN.update();
+        }
 
-			transform(targets.table, 2000); // Apply initial transformation
-		}
-
-
-		function init() {
-			camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 10000);
-			camera.position.z = 3000;
-
-			scene = new THREE.Scene();
-
-			renderer = new CSS3DRenderer();
-			renderer.setSize(window.innerWidth, window.innerHeight);
-			document.getElementById("container").appendChild(renderer.domElement);
-
-			controls = new TrackballControls(camera, renderer.domElement);
-			controls.minDistance = 500;
-			controls.maxDistance = 6000;
-
-			initializePeriodicTable();
-
-			const buttonTable = document.getElementById("table");
-			buttonTable.addEventListener("click", () => transform(targets.table, 2000));
-
-			const buttonSphere = document.getElementById("sphere");
-			buttonSphere.addEventListener("click", () => transform(targets.sphere, 2000));
-
-			const buttonHelix = document.getElementById("helix");
-			buttonHelix.addEventListener("click", () => transform(targets.helix, 2000));
-
-			const buttonGrid = document.getElementById("grid");
-			buttonGrid.addEventListener("click", () => transform(targets.grid, 2000));
-
-			window.addEventListener("resize", onWindowResize);
-		}
-
-		function transform(targets, duration) {
-			TWEEN.removeAll();
-
-			for (let i = 0; i < objects.length; i++) {
-				const object = objects[i];
-				const target = targets[i];
-
-				// Skip if target is undefined
-				if (!target) {
-					console.warn(`No target for object at index ${i}`);
-					continue;
-				}
-
-				new TWEEN.Tween(object.position)
-					.to(
-						{ x: target.position.x, y: target.position.y, z: target.position.z },
-						Math.random() * duration + duration
-					)
-					.easing(TWEEN.Easing.Exponential.InOut)
-					.start();
-
-				new TWEEN.Tween(object.rotation)
-					.to(
-						{ x: target.rotation.x, y: target.rotation.y, z: target.rotation.z },
-						Math.random() * duration + duration
-					)
-					.easing(TWEEN.Easing.Exponential.InOut)
-					.start();
-			}
-
-			new TWEEN.Tween(this).to({}, duration * 2).onUpdate(render).start();
-		}
-
-
-		function onWindowResize() {
-			camera.aspect = window.innerWidth / window.innerHeight;
-			camera.updateProjectionMatrix();
-			renderer.setSize(window.innerWidth, window.innerHeight);
-			render();
-		}
-
-		function animate() {
-			requestAnimationFrame(animate);
-			TWEEN.update();
-			controls.update();
-		}
-
-		function render() {
-			renderer.render(scene, camera);
-		}
-	</script>
+        function render() {
+            renderer.render(scene, camera);
+        }
+    </script>
 </body>
 
 </html>
