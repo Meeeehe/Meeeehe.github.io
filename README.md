@@ -50,8 +50,8 @@ This project was developed as part of an **assessment from Kasatria Technologies
 ### Clone the Repository
 
 ```sh
-git clone https://github.com/YOUR_GITHUB_USERNAME/3D-Periodic-Table.git
-cd 3D-Periodic-Table
+git clone https://github.com/Meeeehe/Meeeehe.github.io.git
+cd Meeeehe.github.io
 ```
 
 ---
